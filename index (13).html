@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الأدمن</title>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCn_JhHcx-OXd_zoxwGqSxIfIwrNLBBYgI",
+  authDomain: "error-13b42.firebaseapp.com",
+  databaseURL: "https://error-13b42-default-rtdb.firebaseio.com",
+  projectId: "error-13b42",
+  storageBucket: "error-13b42.firebasestorage.app",
+  messagingSenderId: "255234583788",
+  appId: "1:255234583788:web:bba2a1aba01d68b2c189c9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// عرض الطلبات
+onValue(ref(db, "requests"), (snapshot)=>{
+    const data = snapshot.val();
+    let html = "";
+    for(let id in data){
+        html += `
+        <div style="background:#222;padding:10px;margin:10px">
+            <p>👤 ${data[id].userId}</p>
+            <p>📩 ${data[id].message}</p>
+        </div>`;
+    }
+    document.getElementById("طلبات").innerHTML = html;
+});
+
+// عرض المستخدمين
+onValue(ref(db, "users"), (snapshot)=>{
+    const data = snapshot.val();
+    let html = "";
+    for(let id in data){
+        html += `
+        <div style="background:#333;padding:10px;margin:10px">
+            ${id}
+            <button onclick="activate('${id}')">تفعيل</button>
+            <button onclick="deactivate('${id}')">تعطيل</button>
+        </div>`;
+    }
+    document.getElementById("users").innerHTML = html;
+});
+
+window.activate = function(id){
+    update(ref(db, "users/" + id), {active:true});
+}
+
+window.deactivate = function(id){
+    update(ref(db, "users/" + id), {active:false});
+}
+
+// إرسال إذاعة
+window.sendBroadcast = function(){
+    const msg = document.getElementById("bmsg").value;
+    set(ref(db, "broadcast"), {message: msg});
+    alert("تم إرسال الإذاعة");
+}
+
+</script>
+</head>
+
+<body style="background:#111;color:white;font-family:sans-serif">
+
+<h2>لوحة الأدمن</h2>
+
+<h3>📢 إرسال إذاعة</h3>
+<input id="bmsg" placeholder="اكتب الرسالة">
+<button onclick="sendBroadcast()">إرسال</button>
+
+<h3>📩 الطلبات</h3>
+<div id="طلبات"></div>
+
+<h3>👥 المستخدمين</h3>
+<div id="users"></div>
+
+</body>
+</html>
